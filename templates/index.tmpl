@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Żmud</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.min.css">
+    <style>
+        .hidden {
+            display: none;
+        }
+        div.btn-container {
+            display: flex;
+        } 
+        iframe {
+            width: 100%;
+            height: 90vh;
+        }
+        
+        @media screen and (min-width: 1900px) {
+            body {
+                max-width: unset;
+                display: flex;
+                gap: 20px;
+                background: #ddd; 
+            }
+            .card {
+                width: 700px;
+                background:white;
+                border-radius: 20px;
+                padding: 20px;
+            }
+            .card.third {
+                max-width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <p>Data: <b>{{.Date}}</b></p>
+        <p>Nadawca: <b>{{.AddressFrom}}</b></p>
+        <p>Odbiorca: <b>{{.AddressTo}}</b></p>
+        <p>Temat: <b>{{.Subject}}</b></p>
+
+        <div class="btn-container">
+            <button onclick="showText()">Tekst</button>
+            <button onclick="showHtml()">HTML</button>
+            <button onclick="showHtmlNewCard()">HTML (nowa karta)</button>
+            <button onclick="showRawHtml()">surowy HTML</button>
+        </div>
+
+        <textarea rows="20" id="textarea">
+{{.Text}}
+        </textarea>
+        <iframe id="htmlrender" src="/mail/{{.Id}}/iframe" class="hidden"></iframe>
+        <textarea rows="20" id="htmlarea" class="hidden">
+            {{.Html}}
+        </textarea><br>
+        
+        <div class="btn-container">
+            <form class="btn" action="/">
+                <input type="submit" value="Zostaw na później" />
+            </form>
+            <form class="btn" action="/mail/{{.Id}}/ignore">
+                <input type="submit" value="Ignoruj mail (ustaw flagę)" />
+            </form>
+            <form class="btn" action="/mail/{{.Id}}/delete">
+                <input type="submit" value="Trwale usuń (bez backupu)" />
+            </form>
+        </div>
+    </div>
+    
+    <div class="card">
+        <form method="post" action="/mail/{{.Id}}/categorize">
+            <label for="name"><h4>Tekst:</h4> </label>
+            <textarea name="text" id="name" rows="20">{{.Text}}</textarea>
+            <label for="category">Kategoria: </label>
+            <select id="category" name="category" required>
+                {{ range $category := .Categories }}
+                    <option value="{{$category}}">{{$category}}</option>
+                {{ end }}
+            </select>
+            <input type="submit" value="Skategoryzuj mail"> 
+        </form>
+    
+    </div>
+
+    <div class="card third">
+        <form method="post" action="/mail/{{.Id}}/newCategory">
+            <label for="name">Nazwa nowej kategorii: </label>
+            <input type="text" name="name" id="name"> 
+            <input type="submit" value="Dodaj nową kategorię"> 
+        </form>
+
+        <p>Ilość maili do sklasyfikowania: <b>{{.UnlabeledCount}}</b></p>
+        <p>Ilość sklasyfikowanych maili: <b>{{.LabeledCount}}</b></p>
+        <p>Ilość ignorowanych maili: <b>{{.IgnoredCount}}</b></p>
+        <p>Ilość wszystkich maili: <b>{{.TotalCount}}</b></p>
+    </div>
+    
+    <script>
+        let showText = () => {textarea.classList.remove("hidden"); htmlrender.classList.add("hidden"); htmlarea.classList.add("hidden")} 
+        let showHtml = () => {textarea.classList.add("hidden"); htmlrender.classList.remove("hidden"); htmlarea.classList.add("hidden")} 
+        let showRawHtml = () => {textarea.classList.add("hidden"); htmlrender.classList.add("hidden"); htmlarea.classList.remove("hidden")} 
+        let showHtmlNewCard = () => window.open("/mail/{{.Id}}/iframe", "_blank").focus();
+    </script>
+</body>
+</html>

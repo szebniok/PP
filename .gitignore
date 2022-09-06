@@ -1,0 +1,6 @@
+.bsp
+.scala-build
+.vscode
+maile
+*.eml
+mails.sqlite**
